@@ -141,18 +141,18 @@ class HBNBCommand(cmd.Cmd):
                 value = value.replace('\\"', '"')  # Unescape double quotes
 
             # Check for float parameter syntax
-        elif '.' in value:
-            try:
-                value = float(value)
-            except ValueError:
-                continue  # Skip if unable to convert to float
+            elif '.' in value:
+                try:
+                    value = float(value)
+                except ValueError:
+                    continue  # Skip if unable to convert to float
 
             # Check for integer parameter syntax
-        else:
-            try:
-                value = int(value)
-            except ValueError:
-                continue  # Skip if unable to convert to integer
+            else:
+                try:
+                    value = int(value)
+                except ValueError:
+                    continue  # Skip if unable to convert to integer
 
             # Assign the processed parameter value to object attribute
             setattr(new_instance, key, value)
@@ -357,3 +357,37 @@ class HBNBCommand(cmd.Cmd):
 
             # if att_val was not quoted arg
             if not att_val and args[2]:
+                att_val = args[2].partition(' ')[0]
+
+            args = [att_name, att_val]
+
+        # retrieve dictionary of current objects
+        new_dict = storage.all()[key]
+
+        # iterate through attr names and values
+        for i, att_name in enumerate(args):
+            # block only runs on even iterations
+            if (i % 2 == 0):
+                att_val = args[i + 1]  # following item is value
+                if not att_name:  # check for att_name
+                    print("** attribute name missing **")
+                    return
+                if not att_val:  # check for att_value
+                    print("** value missing **")
+                    return
+                # type cast as necessary
+                if att_name in HBNBCommand.types:
+                    att_val = HBNBCommand.types[att_name](att_val)
+
+                # update dictionary with name, value pair
+                new_dict.__dict__.update({att_name: att_val})
+
+        new_dict.save()  # save updates to file
+
+    def help_update(self):
+        """ Help information for the update class """
+        print("Updates an object with new information")
+        print("Usage: update <className> <id> <attName> <attVal>\n")
+
+if __name__ == "__main__":
+    HBNBCommand().cmdloop()
