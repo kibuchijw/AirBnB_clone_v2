@@ -1,4 +1,4 @@
--- Create the database if it does not exist
+-- Create database if it does not exist
 CREATE DATABASE IF NOT EXISTS hbnb_dev_db;
 
 -- Create the user hbnb_dev if it does not exist
