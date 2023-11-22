@@ -24,6 +24,46 @@ class test_fileStorage(unittest.TestCase):
         except:
             pass
 
+    # Test object creation with parameters using create command
+    def test_create_with_params(self):
+        """Test object creation with parameters using create command"""
+        # Test creating objects with string, float, and integer parameters
+        obj_str = storage.do_create("BaseModel name=\"My_house\" age=25")
+        obj_float = storage.do_create("BaseModel price=100.50")
+        obj_int = storage.do_create("BaseModel quantity=10")
+
+        # Check if objects are created successfully
+        self.assertIsNotNone(obj_str)
+        self.assertIsNotNone(obj_float)
+        self.assertIsNotNone(obj_int)
+
+    # Test handling of string parameters in create command
+    def test_string_parameter_handling(self):
+        """Test handling of string parameters in create command"""
+        # Test creating objects with string parameters
+        obj = storage.do_create("BaseModel name=\"My_house\"")
+
+        # Check if string parameters are correctly handled
+        self.assertEqual(obj.name, "My house")
+
+    # Test handling of float parameters in create command
+    def test_float_parameter_handling(self):
+        """Test handling of float parameters in create command"""
+        # Test creating objects with float parameters
+        obj = storage.do_create("BaseModel price=100.50")
+
+        # Check if float parameters are correctly handled
+        self.assertEqual(obj.price, 100.50)
+
+    # Test handling of integer parameters in create command
+    def test_integer_parameter_handling(self):
+        """Test handling of integer parameters in create command"""
+        # Test creating objects with integer parameters
+        obj = storage.do_create("BaseModel quantity=10")
+
+        # Check if integer parameters are correctly handled
+        self.assertEqual(obj.quantity, 10)
+
     def test_obj_list_empty(self):
         """ __objects is initially empty """
         self.assertEqual(len(storage.all()), 0)
