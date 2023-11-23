@@ -5,23 +5,24 @@ import json
 
 class FileStorage:
     """This class manages storage of hbnb models in JSON format"""
+
     __file_path = 'file.json'
     __objects = {}
 
     def all(self, cls=None):
-        """Returns a dictionary of models currently in storage"""
+        """Method that returns the list of objects of a
+        given class type"""
 
-        if cls is None:
-            return self.__objects  # entire dictionary is returned
+        if cls:
+            same_classtype = dict()
 
-        className = cls.__name__
-        dictn = {}
-        for key in self.__objects.keys():
-            if key.split('.')[0] == className:
-                dictn[key] = self.__objects[key]
+            for key, obj in self.__objects.items():
+                if obj.__class__ == cls:
+                    same_classtype[key] = obj
 
-        return dictn
-        #return FileStorage.__objects
+            return same_classtype
+
+        return self.__objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
@@ -56,16 +57,16 @@ class FileStorage:
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
                 for key, val in temp.items():
-                        self.all()[key] = classes[val['__class__']](**val)
+                    self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
             pass
 
     def delete(self, obj=None):
-        """ Method that deletes objects from __objects if it is inside.
-        If obj is equal to None, the method should not do anything """
+        """A method that deletes obj from __objects """
+
         if obj:
-            # Put the obj name and id into a key then delete it
             key = "{}.{}".format(type(obj).__name__, obj.id)
-            del self.__objects[key]
 
-
+            if key in self.__objects:
+                del self.__objects[key]
+                self.save()

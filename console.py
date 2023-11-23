@@ -4,6 +4,7 @@ import cmd
 import sys
 from models.base_model import BaseModel
 from models.__init__ import storage
+from models import storage_type
 from models.user import User
 from models.place import Place
 from models.state import State
@@ -23,7 +24,6 @@ class HBNBCommand(cmd.Cmd):
                'State': State, 'City': City, 'Amenity': Amenity,
                'Review': Review
               }
-    dot_cmds = ['all', 'count', 'show', 'destroy', 'update']
     types = {
              'number_rooms': int, 'number_bathrooms': int,
              'max_guest': int, 'price_by_night': int,
@@ -34,57 +34,6 @@ class HBNBCommand(cmd.Cmd):
         """Prints if isatty is false"""
         if not sys.__stdin__.isatty():
             print('(hbnb)')
-
-    def precmd(self, line):
-        """Reformat command line for advanced command syntax.
-
-        Usage: <class name>.<command>([<id> [<*args> or <**kwargs>]])
-        (Brackets denote optional fields in usage example.)
-        """
-        _cmd = _cls = _id = _args = ''  # initialize line elements
-
-        # scan for general formating - i.e '.', '(', ')'
-        if not ('.' in line and '(' in line and ')' in line):
-            return line
-
-        try:  # parse line left to right
-            pline = line[:]  # parsed line
-
-            # isolate <class name>
-            _cls = pline[:pline.find('.')]
-
-            # isolate and validate <command>
-            _cmd = pline[pline.find('.') + 1:pline.find('(')]
-            if _cmd not in HBNBCommand.dot_cmds:
-                raise Exception
-
-            # if parantheses contain arguments, parse them
-            pline = pline[pline.find('(') + 1:pline.find(')')]
-            if pline:
-                # partition args: (<id>, [<delim>], [<*args>])
-                pline = pline.partition(', ')  # pline convert to tuple
-
-                # isolate _id, stripping quotes
-                _id = pline[0].replace('\"', '')
-                # possible bug here:
-                # empty quotes register as empty _id when replaced
-
-                # if arguments exist beyond _id
-                pline = pline[2].strip()  # pline is now str
-                if pline:
-                    # check for *args or **kwargs
-                    if pline[0] == '{' and pline[-1] == '}'\
-                            and type(eval(pline)) is dict:
-                        _args = pline
-                    else:
-                        _args = pline.replace(',', '')
-                        # _args = _args.replace('\"', '')
-            line = ' '.join([_cmd, _cls, _id, _args])
-
-        except Exception as mess:
-            pass
-        finally:
-            return line
 
     def postcmd(self, stop, line):
         """Prints if isatty is false"""
@@ -114,52 +63,34 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, args):
-        """ Create an object of any class with given parameters """
-        if not args:
+        """ Create an object of any class"""
+        try:
+            if not args:
+                raise SyntaxError()
+
+            splittedArgs = args.split(" ")
+            inst = eval("{}()".format(splittedArgs[0]))
+
+            for commandArg in splittedArgs[1:]:
+                param = commandArg.split("=")
+                key = param[0]
+                value = param[1].replace("_", " ")
+
+                if hasattr(inst, key):
+                    try:
+                        setattr(inst, key, eval(value))
+                    except Exception:
+                        pass
+
+            inst.save()
+
+            print("{}".format(inst.id))
+        except SyntaxError:
             print("** class name missing **")
-            return
-
-        args_list = args.split()
-        class_name = args_list[0]
-
-        if class_name not in HBNBCommand.classes:
+        except NameError:
             print("** class doesn't exist **")
-            return
-
-        new_instance = HBNBCommand.classes[class_name]()
-
-        params = args_list[1:]
-        for param in params:
-            key_value = param.split('=')
-            if len(key_value) != 2:
-                continue
-
-            key, value = key_value
-            if '"' in value:  # Check for string parameter syntax
-                # Replace underscores with spaces
-                value = value.replace('_', ' ')
-                value = value.replace('\\"', '"')  # Unescape double quotes
-
-            # Check for float parameter syntax
-            elif '.' in value:
-                try:
-                    value = float(value)
-                except ValueError:
-                    continue  # Skip if unable to convert to float
-
-            # Check for integer parameter syntax
-            else:
-                try:
-                    value = int(value)
-                except ValueError:
-                    continue  # Skip if unable to convert to integer
-
-            # Assign the processed parameter value to the object attribute
-            setattr(new_instance, key, value)
-
-        storage.save()  # Save the object to the storage
-        print(new_instance.id)  # Print the ID of the created object
-        storage.save()  # Save the changes made to storage
+        except IndexError:
+            pass
 
     def help_create(self):
         """ Help information for the create method """
@@ -190,7 +121,7 @@ class HBNBCommand(cmd.Cmd):
 
         key = c_name + "." + c_id
         try:
-            print(storage.all()[key])
+            print(storage._FileStorage__objects[key])
         except KeyError:
             print("** no instance found **")
 
@@ -222,7 +153,7 @@ class HBNBCommand(cmd.Cmd):
         key = c_name + "." + c_id
 
         try:
-            del (storage.all()[key])
+            del(storage.all()[key])
             storage.save()
         except KeyError:
             print("** no instance found **")
@@ -233,24 +164,25 @@ class HBNBCommand(cmd.Cmd):
         print("[Usage]: destroy <className> <objectId>\n")
 
     def do_all(self, args):
-        """ Shows all objects or all objects of a class """
+        """ Shows all objects, or all objects of a class"""
         print_list = []
-        objects_dict = storage.all()
+
+        if storage_type == 'db':
+            store = storage.all(args)
+        else:
+            store = storage._FileStorage__objects
 
         if args:
-            class_name = args.split(' ')[0]  # Extract the class name
-            if class_name not in HBNBCommand.classes:
+            args = args.split(' ')[0]  # remove possible trailing args
+            if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-
-            # Filter objects based on the provided class name
-            for key, obj in objects_dict.items():
-                if key.split('.')[0] == class_name:
-                    print_list.append(str(obj))
+            for k, v in store.items():
+                if k.split('.')[0] == args:
+                    print_list.append(str(v))
         else:
-            # Display all objects if no class name is provided
-            for obj in objects_dict.values():
-                print_list.append(str(obj))
+            for k, v in store.items():
+                print_list.append(str(v))
 
         print(print_list)
 
@@ -262,7 +194,7 @@ class HBNBCommand(cmd.Cmd):
     def do_count(self, args):
         """Count current number of class instances"""
         count = 0
-        for k, v in storage.all().items():
+        for k, v in storage._FileStorage__objects.items():
             if args == k.split('.')[0]:
                 count += 1
         print(count)
