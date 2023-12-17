@@ -5,23 +5,28 @@ import json
 
 class FileStorage:
     """This class manages storage of hbnb models in JSON format"""
+
     __file_path = 'file.json'
     __objects = {}
 
     def all(self, cls=None):
-        """Returns a dictionary of models currently in storage"""
-        if cls is None:
-            return FileStorage.__objects
-        else:
-            filtered_objs = {}
-            for key, obj in FileStorage.__objects.items():
-                if isinstance(obj, cls):
-                    filtered_objs[key] = obj
-            return filtered_objs
+        """Method that returns the list of objects of a
+        given class type"""
+
+        if cls:
+            same_classtype = dict()
+
+            for key, obj in self.__objects.items():
+                if obj.__class__ == cls:
+                    same_classtype[key] = obj
+
+            return same_classtype
+
+        return self.__objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
-        self.all()[obj.to_dict()['__class__'] + '.' + obj.id] = obj
+        self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
 
     def save(self):
         """Saves storage dictionary to file"""
@@ -43,10 +48,10 @@ class FileStorage:
         from models.review import Review
 
         classes = {
-            'BaseModel': BaseModel, 'User': User, 'Place': Place,
-            'State': State, 'City': City, 'Amenity': Amenity,
-            'Review': Review
-        }
+                    'BaseModel': BaseModel, 'User': User, 'Place': Place,
+                    'State': State, 'City': City, 'Amenity': Amenity,
+                    'Review': Review
+                  }
         try:
             temp = {}
             with open(FileStorage.__file_path, 'r') as f:
@@ -57,7 +62,11 @@ class FileStorage:
             pass
 
     def delete(self, obj=None):
-        """Deletes obj from __objects if it exists"""
-        if obj is not None:
-            obj_key = obj.__class__.__name__ + '.' + obj.id
-            self.all().pop(obj_key, None)
+        """A method that deletes obj from __objects """
+
+        if obj:
+            key = "{}.{}".format(type(obj).__name__, obj.id)
+
+            if key in self.__objects:
+                del self.__objects[key]
+                self.save()
