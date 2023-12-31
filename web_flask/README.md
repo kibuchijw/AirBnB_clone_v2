@@ -18,6 +18,7 @@
 | ---- | ---- |
 | 0. Hello Flask! | [0-hello_route.py](./0-hello_route.py), [__init__.py](./__init__.py) |
 | 1. HBNB | [1-hbnb_route.py](./1-hbnb_route.py) |
+| 2. C is fun! | [2-c_route.py](./2-c_route.py) |
 
 ## Tasks
 ### 0. Hello Flask!
@@ -33,3 +34,9 @@
 	* `/`: display "Hello HBNB"
 	* `/hbnb`: display “HBNB”
     * You must use the option `strict_slashes=False` in your route definition
+### 2. C is fun!
+* Write a script that starts a Flask web application:
+    * Routes:
+	* `/`: display “Hello HBNB!”
+	* `/hbnb`: display “HBNB”
+	* `/c/<text>`: display “C ” followed by the value of the `text` variable (replace underscore `_` symbols with a space` `)
