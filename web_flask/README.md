@@ -21,6 +21,7 @@
 | 2. C is fun! | [2-c_route.py](./2-c_route.py) |
 | 3. Python is cool! | [3-python_route.py](./3-python_route.py) |
 | 4. Is it a number? | [4-number_route.py](./4-number_route.py) |
+| 5. Number template | [5-number_template.py](./5-number_template.py), [templates/5-number.html](./templates/5-number.html) |
 
 ## Tasks
 ### 0. Hello Flask!
@@ -61,4 +62,16 @@
     * `/python/<text>`: display “Python ”, followed by the value of the `text` variable (replace underscore `_` symbols with a space` `)
 	* The default value of `text` is “is cool”
     * `/number/<n>`: display “`n` is a number” only if `n` is an integer
+* You must use the option `strict_slashes=False` in your route definition
+### 5. Number template
+* Write a script that starts a Flask web application:
+* Routes:
+    * `/`: display “Hello HBNB!”
+    * `/hbnb`: display “HBNB”
+    * `/c/<text>`: display “C ” followed by the value of the `text` variable (replace underscore `_` symbols with a space` `)
+    * `/python/<text>`: display “Python ”, followed by the value of the `text` variable (replace underscore `_` symbols with a space` `)
+	* The default value of `text` is “is cool”
+    * `/number/<n>`: display “`n` is a number” only if `n` is an integer
+    * `/number_template/<n>`: display a HTML page only if `n` is an integer:
+	* `H1` tag: “Number: `n`” inside the tag `BODY`
 * You must use the option `strict_slashes=False` in your route definition
