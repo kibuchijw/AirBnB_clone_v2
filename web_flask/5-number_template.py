@@ -3,7 +3,7 @@
 Starts a Flask web application.
 Listens on port 0.0.0.0, port 5000
 """
-from flask import Flask, escape
+from flask import Flask, escape, render_template
 
 app = Flask(__name__)
 
@@ -46,9 +46,7 @@ def show_number(n):
 @app.route('/number_template/<int:n>', strict_slashes=False)
 def show_number_template(n):
     """ Displays a HTML page only if n is an integer """
-    if isinstance(n, int):
-        return render_template('5-number.html', n=n)
-    return 'Not Found', 404
+    return render_template('number.html', n=n)
 
 
 if __name__ == '__main__':
